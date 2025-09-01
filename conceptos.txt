@@ -1,0 +1,28 @@
+CLASE 11 AGOSTO 
+-Para crear un proyecto en Flutter se usa ctrl+shift+t y se pone Flutter: New Project
+-flutter run para ejecutar el proyecto
+-flutter pub get para descargar los paquetes
+-Un StatelessWidget es al que no se le tiene que actualizar un estado, es estático 
+-Un StatefulWidget es para cambiar el estado
+-En fluuter para actualizar la app existe Hot Reload y Restart
+-Para darle estilos al texto se usa style: TextStyle{
+    -Poner colores: Colors.blueAccent
+    -Poner tamaño letra: fontSize
+    -Poner peso o grosor a texto: fontWeight: FontWeight.w700
+}
+-Para centrar texto se usa textAlign: TextAlign.center
+-Para actualizar desde la terminar se usa r 
+-Cuando un componente tiene un único hijo se usa la propiedad child
+-Cuando se tiene un widget que recibe multiples hijos se usa children que viene siendo una lista
+-Clic derecho -> Refactor -> Envolver en la opción que requiera
+-padding dentro del contenedor
+-margin fuera del contenedor
+-height altura del contenedor
+-width ancho del contenedor
+-Para ocupar todo el ancho se usa width: double.infinity
+-La fila Row por defecto ocupa todo el espacio disponible en ancho
+-La columna Column por defecto ocupa todo el espacio disponible en alto
+-En columnas el main es vertical y el cross horizontal
+-En filas el main es horizontal y el cross vertical
+-Los contenedores se usan cuando quiero agregar un estilo
+-Se usa Row o Column cuando necesito organizar algo
