@@ -25,7 +25,9 @@ Para ejecutar la app es necesario tener un entorno de desarrollo de Flutter.
 - **Configura la Variable de Entorno:** Agrega la ruta de la carpeta bin de Flutter a la variable PATH de tu sistema operativo.
 - **Ejecuta flutter doctor:** Abre la terminal o Command Prompt y ejecuta:
 
-`flutter doctor`
+```bash
+flutter doctor
+```
 
 ## Ejecución del proyecto
 
@@ -50,3 +52,7 @@ flutter pub get
 ```bash
 flutter run
 ```
+
+## Video del funcionamiento de la App
+
+[Clic aquí](https://drive.google.com/file/d/18XQVPeYdj4QM5klacTRz9OK8vCYm0Ruk/view?usp=sharing)
