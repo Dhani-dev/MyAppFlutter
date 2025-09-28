@@ -31,16 +31,22 @@ Para ejecutar la app es necesario tener un entorno de desarrollo de Flutter.
 
 - **1. Clonar el repositorio desde la terminal:**
 
-`git clone https://github.com/Dhani-dev/MyAppFlutter.git`
+```bash
+git clone https://github.com/Dhani-dev/MyAppFlutter.git`
 
-`cd <NOMBRE_DEL_PROYECTO>`
+`cd <NOMBRE_DEL_PROYECTO>
+```
 
 - **2. Obtener Dependencias dentro de la carpeta del proyecto:**
 
-`flutter pub get`
+```bash
+flutter pub get
+```
 
 - **3. Iniciar un Emulador:** Puede ser un emulador mobile, chrome, etc.
 
 - **4. Ejecutar la App:**
 
-`flutter run`
+```bash
+flutter run
+```
