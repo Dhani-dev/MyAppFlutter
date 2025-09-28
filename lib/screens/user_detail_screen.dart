@@ -1,5 +1,4 @@
 //Pantalla de detalle, info del usuario
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/user.dart';
@@ -8,7 +7,7 @@ import '../providers/user_provider.dart';
 class UserDetailScreen extends StatelessWidget {
   const UserDetailScreen({super.key});
 
-  // Muestra un diálogo de confirmación para eliminar
+//Confirmacion para eliminar
   Future<void> _confirmDelete(BuildContext context, User user) async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -30,17 +29,16 @@ class UserDetailScreen extends StatelessWidget {
     );
 
     if (confirmed == true) {
-      // Llama al método DELETE del provider
+      //Llama al método delete del provider
       final success = await Provider.of<UserProvider>(context, listen: false).deleteUser(user.id);
       
       if (success && context.mounted) {
-        // Vuelve a la pantalla anterior (la lista)
+        //Vuelve a la pantalla de la lista
         Navigator.of(context).pop(); 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Usuario eliminado (soft-delete) con éxito.')),
+          const SnackBar(content: Text('Usuario eliminado con éxito.')),
         );
       } else if (context.mounted) {
-        // Muestra mensaje de error
          ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error al eliminar: ${Provider.of<UserProvider>(context, listen: false).errorMessage}')),
         );
@@ -50,14 +48,12 @@ class UserDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Obtiene el objeto User que se pasó como argumento
     final user = ModalRoute.of(context)!.settings.arguments as User;
 
     return Scaffold(
       appBar: AppBar(
         title: Text('${user.firstName} ${user.lastName}'),
         actions: [
-          // Acción de Eliminación (Requisito)
           IconButton(
             icon: const Icon(Icons.delete, color: Colors.red),
             onPressed: () => _confirmDelete(context, user),
@@ -76,11 +72,7 @@ class UserDetailScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
-            // Detalles del usuario
-            ListTile(
-              leading: const Icon(Icons.badge),
-              title: Text('ID: ${user.id}'),
-            ),
+            //Detalles del usuario
             ListTile(
               leading: const Icon(Icons.person),
               title: const Text('Nombre Completo'),
@@ -97,7 +89,6 @@ class UserDetailScreen extends StatelessWidget {
               subtitle: Text(user.email),
             ),
             const Divider(),
-            // Aquí puedes agregar más detalles del usuario si el modelo los incluye.
           ],
         ),
       ),

@@ -12,23 +12,27 @@ class UserListScreen extends StatefulWidget {
 }
 
 class _UserListScreenState extends State<UserListScreen> {
-  // Controlador para la paginación con Scroll Infinito
-  final ScrollController _scrollController = ScrollController();
-  // Texto para la funcionalidad de Buscador/Filtro (Requisito)
-  String _searchQuery = ''; 
+  final ScrollController _scrollController = ScrollController(); //Controlador para la paginación con Scroll
+  String _searchQuery = ''; //Texto para el buscador
 
   @override
   void initState() {
     super.initState();
-    // Inicia la carga de la primera página
+    //Inicia carga de la pagina
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<UserProvider>(context, listen: false).fetchUsers();
     });
 
-    // Listener para detectar el final de la lista y cargar más (Paginación)
+    //Para detectar el final de la lista y cargar más
     _scrollController.addListener(() {
-      if (_scrollController.position.pixels == _scrollController.position.maxScrollExtent) {
-        Provider.of<UserProvider>(context, listen: false).loadNextPage();
+      final provider = Provider.of<UserProvider>(context, listen: false);
+
+      double scrollThreshold = 0.9;
+      if (_scrollController.position.pixels >=
+          _scrollController.position.maxScrollExtent * scrollThreshold) {
+        if (!provider.isLoading && provider.errorMessage == null) {
+          provider.loadNextPage();
+        }
       }
     });
   }
@@ -39,32 +43,34 @@ class _UserListScreenState extends State<UserListScreen> {
     super.dispose();
   }
 
-  // Lógica de filtrado (Requisito: Buscador o Filtro)
+//Para el buscador o filtrar usuarios
   List<User> _filterUsers(List<User> users) {
     if (_searchQuery.isEmpty) {
       return users;
     }
     return users.where((user) {
-      // Filtra por nombre completo, email o username (puedes ajustar los campos)
+      //Filtra por nombre completo, email, username
       final fullName = '${user.firstName} ${user.lastName}'.toLowerCase();
       final email = user.email.toLowerCase();
       final query = _searchQuery.toLowerCase();
-      return fullName.contains(query) || email.contains(query) || user.username.toLowerCase().contains(query);
+      return fullName.contains(query) ||
+          email.contains(query) ||
+          user.username.toLowerCase().contains(query);
     }).toList();
   }
 
   @override
   Widget build(BuildContext context) {
-    // Usamos Consumer para escuchar los cambios del UserProvider
     return Consumer<UserProvider>(
       builder: (context, provider, child) {
         final filteredUsers = _filterUsers(provider.users);
 
         return Scaffold(
           appBar: AppBar(
-            title: const Text('Usuarios (CRUD)'),
+            title: const Text('Usuarios'),
+            centerTitle: true,
             actions: [
-              // Botón para ir a crear un nuevo usuario (CREATE)
+              //Boton para crear un nuevo usuario, create
               IconButton(
                 icon: const Icon(Icons.person_add),
                 onPressed: () => Navigator.of(context).pushNamed('/form'),
@@ -73,7 +79,7 @@ class _UserListScreenState extends State<UserListScreen> {
           ),
           body: Column(
             children: [
-              // Campo de texto para el buscador
+              //Texto para el buscador
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: TextField(
@@ -89,44 +95,97 @@ class _UserListScreenState extends State<UserListScreen> {
                   },
                 ),
               ),
-              
-              // 1. Manejo del estado de ERROR
+
               if (provider.errorMessage != null && filteredUsers.isEmpty)
                 Center(child: Text(provider.errorMessage!))
               else if (filteredUsers.isEmpty && !provider.isLoading)
                 const Center(child: Text('No hay usuarios para mostrar.'))
               else
-                // 2. Muestra la lista
+                //Muestra la lista de los buscados
                 Expanded(
                   child: ListView.builder(
                     controller: _scrollController,
-                    itemCount: filteredUsers.length + (provider.isLoading ? 1 : 0),
+                    itemCount:
+                        filteredUsers.length + (provider.isLoading ? 1 : 0),
                     itemBuilder: (context, index) {
                       if (index < filteredUsers.length) {
                         final user = filteredUsers[index];
-                        return ListTile(
-                          leading: CircleAvatar(
-                            backgroundImage: NetworkImage(user.image),
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 4.0,
+                            horizontal: 8.0,
                           ),
-                          title: Text('${user.firstName} ${user.lastName}'),
-                          subtitle: Text(user.email),
-                          onTap: () {
-                            // Navegación a la pantalla de detalle
-                            Navigator.of(context).pushNamed(
-                              '/detail',
-                              arguments: user, // Pasa el objeto User al detalle
-                            );
-                          },
-                          // Icono para editar (navega al formulario)
-                          trailing: IconButton(
-                            icon: const Icon(Icons.edit, color: Colors.indigo),
-                            onPressed: () {
-                              Navigator.of(context).pushNamed('/form', arguments: user);
-                            },
+                          child: Card(
+                            elevation: 3,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(15),
+                                gradient: LinearGradient(
+                                  colors: const [
+                                    Color.fromARGB(
+                                      255,
+                                      230,
+                                      230,
+                                      255,
+                                    ), 
+                                    Colors
+                                        .indigo, 
+                                  ],
+                                  begin: Alignment
+                                      .topLeft, 
+                                  end: Alignment
+                                      .bottomRight, 
+                                  stops: const [
+                                    0.3,
+                                    1.0,
+                                  ], 
+                                ),
+                              ),
+
+                              child: ListTile(
+                                leading: CircleAvatar(
+                                  backgroundImage: NetworkImage(user.image),
+                                ),
+
+                                title: Text(
+                                  '${user.firstName} ${user.lastName}',
+                                  style: const TextStyle(
+                                    color: Colors.indigo,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+
+                                subtitle: Text(
+                                  user.email,
+                                  style: TextStyle(
+                                    color: Colors.black.withOpacity(0.8),
+                                  ),
+                                ),
+                                onTap: () {
+                                  Navigator.of(
+                                    context,
+                                  ).pushNamed('/detail', arguments: user);
+                                },
+                                trailing: IconButton(
+                                  icon: const Icon(
+                                    Icons.edit,
+                                    color: Colors.white,
+                                  ),
+                                  onPressed: () {
+                                    Navigator.of(
+                                      context,
+                                    ).pushNamed('/form', arguments: user);
+                                  },
+                                ),
+                              ),
+                            ),
                           ),
                         );
                       } else {
-                        // 3. Manejo del estado de CARGA (al final de la lista para paginación)
+                        //Manejo del estado de carga al final de la lista
                         return const Center(
                           child: Padding(
                             padding: EdgeInsets.all(8.0),

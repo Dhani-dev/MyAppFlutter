@@ -1,6 +1,7 @@
 //Manejo de api
 
-// Clase principal para el Modelo de Usuario
+const String defaultImageUrl = 'https://cdn-icons-png.flaticon.com/512/4140/4140047.png'; //Imagen de usuario por defecto
+// Modelo de Usuario
 class User {
   final int id;
   final String firstName;
@@ -9,7 +10,6 @@ class User {
   final String image;
   final String username;
 
-  // Campos opcionales para la funcionalidad de DELETE (soft-delete en la API falsa)
   final bool isDeleted; 
 
   // Constructor
@@ -20,14 +20,12 @@ class User {
     required this.email,
     required this.image,
     required this.username,
-    this.isDeleted = false, // Por defecto, un usuario no está eliminado
+    this.isDeleted = false, 
   });
 
-  // -------------------------------------------------------------------
-  // 1. Factory Constructor para la Deserialización (JSON a Objeto Dart)
-  // -------------------------------------------------------------------
-  // Este constructor se usa cuando recibes datos de la API (GET, POST, PUT, DELETE)
+  //Deserializacion de JSON a objeto de dart, cuando se recibe datos de la api
   factory User.fromJson(Map<String, dynamic> json) {
+    
     return User(
       id: json['id'] as int,
       firstName: json['firstName'] as String,
@@ -35,29 +33,21 @@ class User {
       email: json['email'] as String,
       image: json['image'] as String,
       username: json['username'] as String,
-      
-      // La API de DummyJSON incluye este campo en las respuestas de DELETE
       isDeleted: json['isDeleted'] ?? false, 
     );
   }
 
-  // -------------------------------------------------------------------
-  // 2. Método para Serialización (Objeto Dart a JSON)
-  // -------------------------------------------------------------------
-  // Este método se usa para enviar datos a la API (POST, PUT/PATCH)
+  //Serializacion de objeto de dart a JSON, cuando se envia datos de la api
   Map<String, dynamic> toJson() {
     return {
-      // Generalmente no envías el 'id' al crear (POST)
       'firstName': firstName,
       'lastName': lastName,
       'email': email,
       'username': username,
-      // Se pueden incluir más campos según lo que necesites actualizar/crear
+      'image': image,
     };
   }
 
-  // Método para crear una copia de la instancia con nuevos valores
-  // Útil para la lógica de estado (Provider) y las operaciones de UPDATE
   User copyWith({
     int? id,
     String? firstName,

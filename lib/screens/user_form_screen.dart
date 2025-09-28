@@ -1,5 +1,4 @@
 //Pantalla de formulario, crear/editar usuario
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/user.dart';
@@ -13,30 +12,29 @@ class UserFormScreen extends StatefulWidget {
 }
 
 class _UserFormScreenState extends State<UserFormScreen> {
-  // Key para la validación del formulario (Requisito: Validación de formularios)
-  final _formKey = GlobalKey<FormState>(); 
-  // Controladores para capturar el texto de los campos
+  //Key para la validacion del formulario
+  final _formKey = GlobalKey<FormState>();
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
   final _emailController = TextEditingController();
   final _usernameController = TextEditingController();
+  final _imageUrlController = TextEditingController();
 
-  // Variable para determinar si estamos editando o creando
-  User? _editingUser; 
+  //Verifica si se esta editando o creando
+  User? _editingUser;
   bool _isSaving = false;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Obtiene el usuario pasado como argumento (si existe)
     final args = ModalRoute.of(context)?.settings.arguments;
     if (args is User) {
       _editingUser = args;
-      // Precarga los campos si estamos EDITANDO
       _firstNameController.text = _editingUser!.firstName;
       _lastNameController.text = _editingUser!.lastName;
       _emailController.text = _editingUser!.email;
       _usernameController.text = _editingUser!.username;
+      _imageUrlController.text = _editingUser!.image;
     }
   }
 
@@ -46,37 +44,40 @@ class _UserFormScreenState extends State<UserFormScreen> {
     _lastNameController.dispose();
     _emailController.dispose();
     _usernameController.dispose();
+    _imageUrlController.dispose();
     super.dispose();
   }
 
-  // Método que maneja la creación o edición
+  //Para validar la creacion o edicion
   Future<void> _saveForm() async {
     if (!_formKey.currentState!.validate()) {
-      return; // No hace nada si la validación falla
+      return; 
     }
 
     setState(() {
       _isSaving = true;
     });
 
-    // Construye el mapa de datos a enviar a la API
+    final isEditing = _editingUser != null;
+    //Construye el mapa de datos para enviar a la API
     final userData = {
       'firstName': _firstNameController.text,
       'lastName': _lastNameController.text,
       'email': _emailController.text,
       'username': _usernameController.text,
-      // Nota: El campo 'image' y otros se manejan de manera estática o se omiten en la simulación
+      'image': _imageUrlController.text.isNotEmpty
+          ? _imageUrlController
+                .text //Se usa la url ingresada
+          : (isEditing ? _editingUser!.image : defaultImageUrl),
     };
 
     final provider = Provider.of<UserProvider>(context, listen: false);
     bool success = false;
 
     if (_editingUser == null) {
-      // Lógica CREATE (POST)
-      success = await provider.createUser(userData);
+      success = await provider.createUser(userData); //Para crear, post
     } else {
-      // Lógica UPDATE (PUT/PATCH)
-      success = await provider.updateUser(_editingUser!.id, userData);
+      success = await provider.updateUser(_editingUser!.id, userData); //Para actualizar, put
     }
 
     if (context.mounted) {
@@ -86,9 +87,13 @@ class _UserFormScreenState extends State<UserFormScreen> {
 
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Usuario ${_editingUser == null ? 'creado' : 'actualizado'} con éxito.')),
+          SnackBar(
+            content: Text(
+              'Usuario ${_editingUser == null ? 'creado' : 'actualizado'} con éxito.',
+            ),
+          ),
         );
-        Navigator.of(context).pop(); // Regresa a la lista
+        Navigator.of(context).pop(); //Regresa a la lista
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error: ${provider.errorMessage}')),
@@ -103,6 +108,7 @@ class _UserFormScreenState extends State<UserFormScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(isEditing ? 'Editar Usuario' : 'Crear Nuevo Usuario'),
+        centerTitle: true,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -110,12 +116,12 @@ class _UserFormScreenState extends State<UserFormScreen> {
           key: _formKey,
           child: Column(
             children: [
-              // Campo 1: First Name
+
               TextFormField(
                 controller: _firstNameController,
                 decoration: const InputDecoration(labelText: 'Nombre'),
                 validator: (value) {
-                  // Validación básica: campo obligatorio
+                  //Validación campo obligatorio
                   if (value == null || value.isEmpty) {
                     return 'El nombre es obligatorio.';
                   }
@@ -123,7 +129,7 @@ class _UserFormScreenState extends State<UserFormScreen> {
                 },
               ),
               const SizedBox(height: 10),
-              // Campo 2: Last Name
+
               TextFormField(
                 controller: _lastNameController,
                 decoration: const InputDecoration(labelText: 'Apellido'),
@@ -135,7 +141,7 @@ class _UserFormScreenState extends State<UserFormScreen> {
                 },
               ),
               const SizedBox(height: 10),
-              // Campo 3: Email
+
               TextFormField(
                 controller: _emailController,
                 decoration: const InputDecoration(labelText: 'Email'),
@@ -148,8 +154,8 @@ class _UserFormScreenState extends State<UserFormScreen> {
                 },
               ),
               const SizedBox(height: 10),
-              // Campo 4: Username
-               TextFormField(
+
+              TextFormField(
                 controller: _usernameController,
                 decoration: const InputDecoration(labelText: 'Username'),
                 validator: (value) {
@@ -159,16 +165,60 @@ class _UserFormScreenState extends State<UserFormScreen> {
                   return null;
                 },
               ),
-              const SizedBox(height: 30),
-              // Botón de Guardar
-              ElevatedButton(
-                onPressed: _isSaving ? null : _saveForm,
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size(double.infinity, 50),
+
+              TextFormField(
+                controller: _imageUrlController,
+                decoration: const InputDecoration(
+                  labelText: 'URL de Imagen (Opcional)',
                 ),
-                child: _isSaving
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : Text(isEditing ? 'Guardar Cambios' : 'Crear Usuario'),
+                keyboardType: TextInputType.url,
+ 
+              ),
+              const SizedBox(height: 30),
+              //Boton de Guardar
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(
+                      15,
+                    ), 
+                    gradient: const LinearGradient(
+                      colors: [
+                        Color.fromARGB(
+                          255,
+                          230,
+                          230,
+                          255,
+                        ), 
+                        Colors.indigo, 
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      stops: [0.3, 1.0],
+                    ),
+                  ),
+                  child: ElevatedButton(
+                    onPressed: _saveForm, //Llama a la funcion para guardar
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors
+                          .transparent,
+                      shadowColor: Colors.transparent,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                    ),
+                    child: const Text(
+                      'Guardar Cambios',
+                      style: TextStyle(
+                        color: Colors.indigo,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
               ),
             ],
           ),
